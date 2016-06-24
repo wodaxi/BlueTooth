@@ -5,31 +5,36 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.oodso.checkmouse.MainActivity">
-<RelativeLayout
-    android:layout_width="match_parent"
-android:background="@color/red"
-    android:layout_height="50dp">
 
-    <TextView
-        android:textColor="@color/white"
-        android:layout_centerInParent="true"
-        android:layout_width="wrap_content"
-        android:textSize="20sp"
-        android:layout_height="wrap_content"
-        android:text="设备列表" />
-    <Button
-        android:padding="5dp"
-        android:layout_centerVertical="true"
-        android:layout_alignParentRight="true"
-        android:layout_width="wrap_content"
-        android:layout_height="25dp"
-        android:textSize="10sp"
-        android:textColor="@color/white"
-        android:background="@color/black"
-        android:layout_marginRight="20dp"
-        android:text="刷新" />
-</RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/red">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="设备列表"
+            android:textColor="@color/white"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/bt_search"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/topbar_item_click"
+            android:padding="5dp"
+            android:text="刷新"
+            android:textColor="@color/white"
+            android:textSize="10sp" />
+    </RelativeLayout>
+
     <ListView
+        android:id="@+id/ll_device_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></ListView>
 </LinearLayout>
