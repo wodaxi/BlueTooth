@@ -34,9 +34,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
+
+
                     leDeviceListAdapter.notifyDataSetChanged();
                     break;
                 case 2:
+
                     break;
 
             }
@@ -56,7 +59,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
             if (toHexString1(scanRecord).contains("18f0")) {
                 
             }
-            System.out.println("检测鼠设备-- " + device.getAddress());
+            mUserDataManager.openDataBase();
+            int userNameByUserPwd = mUserDataManager.findUserNameByUserPwd(device.getAddress().replace(":", ""));
+            System.out.print("userNameByUserPwd" + userNameByUserPwd);
 
 
 
@@ -122,7 +127,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-//                            leDeviceListAdapter.clear();
+                            leDeviceListAdapter.clear();
+                            leDeviceListAdapter.notifyDataSetChanged();
                             boolean b = blAdapter.startLeScan(mLeScanCallback);
                             showProgressDialog(MainActivity.this);
                         }
@@ -209,7 +215,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 
                 if (!TextUtils.isEmpty(device_name)){
                     leDeviceListAdapter.updateView(mDevice,device_name,index);
-                    UserData userData = new UserData(device_name,address);
+                    UserData userData = new UserData(device_name,address.replace(":",""));
                     mUserDataManager = new UserDataManager(MainActivity.this);
                     mUserDataManager.openDataBase();
                     mUserDataManager.insertUserData(userData);

@@ -117,7 +117,7 @@ public class UserDataManager {
 				null);
 	}
 
-	public ArrayList<UserData> findUserData(){
+	public ArrayList<UserData> findUserData() throws SQLException {
 		ArrayList<UserData> userDatas = new ArrayList<>();
 		Cursor cursor = mSQLiteDatabase.query(TABLE_NAME, null, null, null, null, null,
 				null);
@@ -180,14 +180,14 @@ public class UserDataManager {
 	}
 
 
-	public String findUserNameByUserPwd(String userpwd) {
-		String name = "";
+	public int findUserNameByUserPwd(String userpwd) throws SQLException {
+		int result= 1;
 		Cursor cursor = mSQLiteDatabase.query(TABLE_NAME, null, USER_PWD + "=" + userpwd, null,null,null,null);
 		if(cursor != null){
-			 name = cursor.getColumnName(1);
+			result = cursor.getCount();
 			cursor.close();
 		}
-		return name;
+		return result;
 	}
 	public boolean updateUserDataByPwd(String username,int id){
 		ContentValues values = new ContentValues();
