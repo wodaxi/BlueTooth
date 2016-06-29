@@ -21,6 +21,7 @@ import com.oodso.checkmouse.adapter.LeDeviceListAdapter;
 import com.oodso.checkmouse.dao.UserData;
 import com.oodso.checkmouse.dao.UserDataManager;
 import com.oodso.checkmouse.ui.LocalDeviceActiviry;
+import com.oodso.checkmouse.utils.SPUtils;
 
 public class MainActivity extends Activity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
@@ -57,16 +58,13 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 			 */
             //判断是否是检测鼠设备
             if (toHexString1(scanRecord).contains("18f0")) {
-                
-            }
-            mUserDataManager.openDataBase();
-            int userNameByUserPwd = mUserDataManager.findUserNameByUserPwd(device.getAddress().replace(":", ""));
-            System.out.print("userNameByUserPwd" + userNameByUserPwd);
 
+            }
 
 
             leDeviceListAdapter.addDevice(device);
 
+//            spUtils.saveAddress(device.getAddress(), device.getAddress());
             Message message = handler.obtainMessage();
             message.what = 1;
             handler.sendMessage(message);
@@ -74,6 +72,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
     };
     private Intent intent;
     private UserDataManager mUserDataManager;
+    private SPUtils spUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +82,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
             mUserDataManager = new UserDataManager(this);
             mUserDataManager.openDataBase();
         }
+
+        spUtils = new SPUtils(MainActivity.this);
+
 
         initView();
     }
@@ -95,9 +97,18 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
         leDeviceListAdapter = new LeDeviceListAdapter(MainActivity.this);
 
 
-
         mDevice.setAdapter(leDeviceListAdapter);
         mDevice.setOnItemClickListener(this);
+//        mDevice.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//            @Override
+//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//                BluetoothDevice device = leDeviceListAdapter.getDevice(position);
+//                String deviceNameByAdress = spUtils.getDeviceNameByAdress(device.getAddress());
+//                leDeviceListAdapter.updateView(mDevice, deviceNameByAdress, position);
+//                leDeviceListAdapter.notifyDataSetChanged();
+//                return false;
+//            }
+//        });
 
 
     }
@@ -133,6 +144,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
                             showProgressDialog(MainActivity.this);
                         }
                     }, 0);
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            blAdapter.stopLeScan(mLeScanCallback);
+                        }
+                    }, 5000);
 
                 }
                 break;
@@ -195,9 +212,16 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         BluetoothDevice device = leDeviceListAdapter.getDevice(position);
-        if(device == null)
+        if (device == null)
             return;
-        turnShowDialog(device,position);
+        turnShowDialog(device, position);
+
+        String deviceNameByAdress = spUtils.getDeviceNameByAdress(device.getAddress());
+        if (!TextUtils.isEmpty(deviceNameByAdress)){
+
+            leDeviceListAdapter.updateView(mDevice, deviceNameByAdress, position);
+            leDeviceListAdapter.notifyDataSetChanged();
+        }
     }
 
     private void turnShowDialog(final BluetoothDevice device, final int index) {
@@ -213,12 +237,15 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 
                 String address = device.getAddress();
 
-                if (!TextUtils.isEmpty(device_name)){
-                    leDeviceListAdapter.updateView(mDevice,device_name,index);
-                    UserData userData = new UserData(device_name,address.replace(":",""));
+                if (!TextUtils.isEmpty(device_name)) {
+                    leDeviceListAdapter.updateView(mDevice, device_name, index);
+                    UserData userData = new UserData(device_name, address);
                     mUserDataManager = new UserDataManager(MainActivity.this);
                     mUserDataManager.openDataBase();
                     mUserDataManager.insertUserData(userData);
+
+
+                    spUtils.saveAddress(address, device_name);
                 }
             }
 

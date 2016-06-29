@@ -26,5 +26,8 @@ public class SPUtils {
         return maps;
 
     }
+    public String getDeviceNameByAdress(String address){
+        return  mSP.getString(address, "");
+    }
 
 }

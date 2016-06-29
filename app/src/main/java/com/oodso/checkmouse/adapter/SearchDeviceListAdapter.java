@@ -1,6 +1,7 @@
 package com.oodso.checkmouse.adapter;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,37 +10,49 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.oodso.checkmouse.R;
-import com.oodso.checkmouse.dao.UserData;
 
 import java.util.ArrayList;
 
-public class LocalDeviceListAdapter extends BaseAdapter {
-    public ArrayList<UserData> mUserData;
+public class SearchDeviceListAdapter extends BaseAdapter {
+    private ArrayList<BluetoothDevice> mLeDevices;
+    public ArrayList<String> mAddress;
+    public ArrayList<String> mDeviceNames;
     private LayoutInflater mInflator;
     private ViewHolder viewHolder;
 
-    public LocalDeviceListAdapter(Activity mActivity) {
+    public SearchDeviceListAdapter(Activity mActivity) {
         super();
-        mUserData = new ArrayList<UserData>();
+        mLeDevices = new ArrayList<BluetoothDevice>();
+        mAddress = new ArrayList<String>();
+        mDeviceNames = new ArrayList<String>();
         mInflator = mActivity.getLayoutInflater();
     }
-    public UserData getUserData(int position) {
-        return mUserData.get(position);
-    }
 
-    public void addUserData(UserData device) {
-        if (!mUserData.contains(device)) {
-            mUserData.add(device);
+    public void addDevice(BluetoothDevice device) {
+        if (!mLeDevices.contains(device)) {
+            mLeDevices.add(device);
         }
     }
+
+    public String getAddress(int position){
+       return mAddress.get(position);    }
+
+    public BluetoothDevice getDevice(int position) {
+        return mLeDevices.get(position);
+    }
+
+    public void clear() {
+        mLeDevices.clear();
+    }
+
     @Override
     public int getCount() {
-        return mUserData.size();
+        return mDeviceNames.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return mUserData.get(i);
+        return mDeviceNames.get(i);
     }
 
     @Override
@@ -59,12 +72,10 @@ public class LocalDeviceListAdapter extends BaseAdapter {
         } else {
             viewHolder = (ViewHolder) view.getTag();
         }
-        UserData userData = mUserData.get(i);
 
-
-        viewHolder.deviceAddress.setText(userData.getUserPwd());
-        viewHolder.deviceName.setText(userData.getUserName());
-        viewHolder.deviceNumber.setText((i+1) + "");
+            viewHolder.deviceName.setText(mDeviceNames.get(i));
+            viewHolder.deviceAddress.setText(mAddress.get(i));
+            viewHolder.deviceNumber.setText((i+1) + "");
 
         return view;
     }
@@ -81,6 +92,8 @@ public class LocalDeviceListAdapter extends BaseAdapter {
             ViewHolder holder = (ViewHolder) view.getTag();
             holder.deviceName = (TextView) view.findViewById(R.id.device_name);
             holder.deviceName.setText(string);
+
+
         }
     }
 }

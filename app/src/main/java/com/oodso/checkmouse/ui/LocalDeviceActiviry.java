@@ -31,7 +31,7 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
     private UserDataManager mUserDataManager;
     private HashMap<String, String> maps;
     private LocalDeviceListAdapter localDeviceListAdapter;
-    private Button bt_local;
+    private Button bt_local,bt_search;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,14 +50,17 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
         bt_local = (Button) findViewById(R.id.bt_local);
         bt_local.setText("清空数据");
         bt_local.setOnClickListener(this);
-        findViewById(R.id.bt_search).setVisibility(View.GONE);
+
+        bt_search = (Button) findViewById(R.id.bt_search);
+        bt_search.setText("返回");
+        bt_search.setOnClickListener(this);
 
         mDeviceList = (ListView) findViewById(R.id.ll_device_list);
 
         //从数据库去查寻数据 填充到listviwe中
         mUserDataManager.openDataBase();
         ArrayList<UserData> userDatas = mUserDataManager.findUserData();
-        System.out.println("数据库数据"+userDatas.size()+userDatas.toString());
+
         localDeviceListAdapter = new LocalDeviceListAdapter(LocalDeviceActiviry.this);
         localDeviceListAdapter.mUserData = userDatas;
 
@@ -131,6 +134,13 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
 
             turnShowDialog();
         }
+        if(v.getId() == R.id.bt_search){
+            //弹框  是否清除本地数据
+
+            LocalDeviceActiviry.this.finish();
+        }
+
+
     }
     private void turnShowDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -140,11 +150,12 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(mUserDataManager != null){
+                    mUserDataManager.openDBRead();
                     boolean b = mUserDataManager.deleteAllUserDatas();
                     if(b){
                         updateAdapter();
                     }else{
-                        Toast.makeText(LocalDeviceActiviry.this,"数据库操作失败",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LocalDeviceActiviry.this,"暂无数据",Toast.LENGTH_SHORT).show();
                     }
                 }
 
