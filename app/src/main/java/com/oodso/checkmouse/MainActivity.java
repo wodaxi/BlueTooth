@@ -22,6 +22,7 @@ import com.oodso.checkmouse.dao.UserData;
 import com.oodso.checkmouse.dao.UserDataManager;
 import com.oodso.checkmouse.ui.LocalDeviceActiviry;
 import com.oodso.checkmouse.utils.SPUtils;
+import com.oodso.checkmouse.utils.ShowToast;
 
 public class MainActivity extends Activity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
@@ -73,6 +74,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
     private Intent intent;
     private UserDataManager mUserDataManager;
     private SPUtils spUtils;
+    private ShowToast showToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +86,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
         }
 
         spUtils = new SPUtils(MainActivity.this);
+        showToast = new ShowToast(MainActivity.this);
 
 
         initView();
@@ -187,9 +190,16 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
             mUserDataManager.closeDataBase();
             mUserDataManager = null;
         }
+
+        showToast.cancel();
         super.onPause();
     }
 
+    @Override
+    protected void onDestroy() {
+        showToast.cancel();
+        super.onDestroy();
+    }
 
     public void showProgressDialog(Context context) {
         dialog = ProgressDialog.show(context, "蓝牙扫描", "全力搜索中...",
@@ -214,13 +224,16 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
         BluetoothDevice device = leDeviceListAdapter.getDevice(position);
         if (device == null)
             return;
-        turnShowDialog(device, position);
+
 
         String deviceNameByAdress = spUtils.getDeviceNameByAdress(device.getAddress());
-        if (!TextUtils.isEmpty(deviceNameByAdress)){
+        if (!TextUtils.isEmpty(deviceNameByAdress)) {
 
             leDeviceListAdapter.updateView(mDevice, deviceNameByAdress, position);
             leDeviceListAdapter.notifyDataSetChanged();
+            showToast.show("该设备已经命名",0);
+        }else{
+            turnShowDialog(device, position);
         }
     }
 
