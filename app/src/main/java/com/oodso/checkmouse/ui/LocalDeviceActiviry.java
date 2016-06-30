@@ -15,23 +15,24 @@ import com.oodso.checkmouse.R;
 import com.oodso.checkmouse.adapter.LocalDeviceListAdapter;
 import com.oodso.checkmouse.dao.UserData;
 import com.oodso.checkmouse.dao.UserDataManager;
+import com.oodso.checkmouse.utils.SPUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Created by xulei on 2016/6/28.
- *
- *
+ * <p/>
+ * <p/>
  * 显示本地设备的页面
  */
-public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemClickListener,View.OnClickListener {
+public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemClickListener, View.OnClickListener {
 
     private ListView mDeviceList;
     private UserDataManager mUserDataManager;
     private HashMap<String, String> maps;
     private LocalDeviceListAdapter localDeviceListAdapter;
-    private Button bt_local,bt_search;
+    private Button bt_local, bt_search;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,35 +84,59 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
         final UserData userdata = localDeviceListAdapter.getUserData(position);
         if (userdata == null)
             return;
-        turnShowDialog(userdata,position);
+        turnShowDialog(userdata, position);
 
 
     }
 
-    private void turnShowDialog( final UserData userdata,final int index) {
+    private void turnShowDialog(final UserData userdata, final int index) {
         final EditText et = new EditText(LocalDeviceActiviry.this);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("设备重命名");
-        builder.setView(et);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        builder.setTitle("要进行的操作");
+//        builder.setView(et);
+//        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+//
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                String device_name = et.getText().toString();
+//                localDeviceListAdapter.updateView(mDeviceList, device_name, index);
+////                String userPwd = userdata.getUserPwd();
+//
+//                boolean b = mUserDataManager.updateUserDataByPwd(device_name, index + 1);
+//                if (b) {
+//
+//                    updateAdapter();
+//                } else {
+//                    Toast.makeText(LocalDeviceActiviry.this, "数据库操作失败", Toast.LENGTH_SHORT).show();
+//
+//                }
+//            }
+//
+//
+//        });
+        builder.setItems(new String[] { "连接", "命名", "查看电量", "甲醛浓度", "历史数据" }, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String device_name = et.getText().toString();
-                localDeviceListAdapter.updateView(mDeviceList,device_name,index);
-//                String userPwd = userdata.getUserPwd();
+                switch (which) {
+                    case 0:
 
-                boolean b = mUserDataManager.updateUserDataByPwd(device_name,index +1);
-                if(b){
+                        break;
+                    case 1:
+                        break;
 
-                    updateAdapter();
-                }else{
-                    Toast.makeText(LocalDeviceActiviry.this,"数据库操作失败",Toast.LENGTH_SHORT).show();
+                    case 2:
+
+                        break;
+                    case 3:
+
+                        break;
+                    case 4:
+                        break;
 
                 }
+
             }
-
-
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
 
@@ -122,19 +147,21 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
         });
         builder.show();
     }
+
     private void updateAdapter() {
         ArrayList<UserData> userDatas = mUserDataManager.findUserData();
         localDeviceListAdapter.mUserData = userDatas;
         localDeviceListAdapter.notifyDataSetChanged();
     }
+
     @Override
     public void onClick(View v) {
-        if(v.getId() == R.id.bt_local){
+        if (v.getId() == R.id.bt_local) {
             //弹框  是否清除本地数据
 
             turnShowDialog();
         }
-        if(v.getId() == R.id.bt_search){
+        if (v.getId() == R.id.bt_search) {
             //弹框  是否清除本地数据
 
             LocalDeviceActiviry.this.finish();
@@ -142,6 +169,7 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
 
 
     }
+
     private void turnShowDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("清空本地数据？");
@@ -149,13 +177,19 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if(mUserDataManager != null){
+                SPUtils spUtils = new SPUtils(LocalDeviceActiviry.this);
+                spUtils.clearSP();
+
+
+                if (mUserDataManager != null) {
                     mUserDataManager.openDBRead();
+
+
                     boolean b = mUserDataManager.deleteAllUserDatas();
-                    if(b){
+                    if (b) {
                         updateAdapter();
-                    }else{
-                        Toast.makeText(LocalDeviceActiviry.this,"暂无数据",Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(LocalDeviceActiviry.this, "暂无数据", Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -163,6 +197,7 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
 
 
         });
+
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
 
             @Override

@@ -30,4 +30,8 @@ public class SPUtils {
         return  mSP.getString(address, "");
     }
 
+    public void clearSP(){
+        mSP.edit().clear().commit();
+    }
+
 }

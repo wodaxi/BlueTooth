@@ -39,9 +39,32 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 
 
                     leDeviceListAdapter.notifyDataSetChanged();
+
+
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            int count = leDeviceListAdapter.getCount();
+                            if (count != 0) {
+
+                                for (int i = 0; i < count; i++) {
+                                    BluetoothDevice device = leDeviceListAdapter.getDevice(i);
+                                    String deviceNameByAdress = spUtils.getDeviceNameByAdress(device.getAddress());
+                                    if (!TextUtils.isEmpty(deviceNameByAdress)) {
+                                        leDeviceListAdapter.updateView(mDevice, deviceNameByAdress, i);
+                                        leDeviceListAdapter.notifyDataSetChanged();
+                                    } else {
+
+                                    }
+                                }
+                            } else {
+                                showToast.show("暂无设备", 0);
+                            }
+                        }
+                    }, 1000);
                     break;
                 case 2:
-
+                    showProgressDialog(MainActivity.this);
                     break;
 
             }
@@ -59,16 +82,14 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 			 */
             //判断是否是检测鼠设备
             if (toHexString1(scanRecord).contains("18f0")) {
-
             }
 
+                System.out.println("搜索到的设备 -- " + device);
+                leDeviceListAdapter.addDevice(device);
+                Message message = handler.obtainMessage();
+                message.what = 1;
+                handler.sendMessage(message);
 
-            leDeviceListAdapter.addDevice(device);
-
-//            spUtils.saveAddress(device.getAddress(), device.getAddress());
-            Message message = handler.obtainMessage();
-            message.what = 1;
-            handler.sendMessage(message);
         }
     };
     private Intent intent;
@@ -80,10 +101,10 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (mUserDataManager == null) {
-            mUserDataManager = new UserDataManager(this);
-            mUserDataManager.openDataBase();
-        }
+//        if (mUserDataManager == null) {
+//            mUserDataManager = new UserDataManager(this);
+//            mUserDataManager.openDataBase();
+//        }
 
         spUtils = new SPUtils(MainActivity.this);
         showToast = new ShowToast(MainActivity.this);
@@ -102,20 +123,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 
         mDevice.setAdapter(leDeviceListAdapter);
         mDevice.setOnItemClickListener(this);
-//        mDevice.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//            @Override
-//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//                BluetoothDevice device = leDeviceListAdapter.getDevice(position);
-//                String deviceNameByAdress = spUtils.getDeviceNameByAdress(device.getAddress());
-//                leDeviceListAdapter.updateView(mDevice, deviceNameByAdress, position);
-//                leDeviceListAdapter.notifyDataSetChanged();
-//                return false;
-//            }
-//        });
 
 
     }
-
 
     @Override
     protected void onResume() {
@@ -138,28 +148,37 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
                             BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     startActivity(this.intent);
                 } else {
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            leDeviceListAdapter.clear();
-                            leDeviceListAdapter.notifyDataSetChanged();
-                            boolean b = blAdapter.startLeScan(mLeScanCallback);
-                            showProgressDialog(MainActivity.this);
-                        }
-                    }, 0);
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            blAdapter.stopLeScan(mLeScanCallback);
-                        }
-                    }, 5000);
 
+                    turnToSearch();
                 }
+
                 break;
         }
-
-
     }
+
+    private void turnToSearch() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                leDeviceListAdapter.clear();
+                leDeviceListAdapter.notifyDataSetChanged();
+                boolean b = blAdapter.startLeScan(mLeScanCallback);
+
+
+                Message message = handler.obtainMessage();
+                message.what = 2;
+                handler.sendMessage(message);
+
+            }
+        }, 0);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                blAdapter.stopLeScan(mLeScanCallback);
+            }
+        }, 5000);
+    }
+
 
     /**
      * 数组转成十六进制字符串
@@ -226,15 +245,15 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
             return;
 
 
-        String deviceNameByAdress = spUtils.getDeviceNameByAdress(device.getAddress());
-        if (!TextUtils.isEmpty(deviceNameByAdress)) {
-
-            leDeviceListAdapter.updateView(mDevice, deviceNameByAdress, position);
-            leDeviceListAdapter.notifyDataSetChanged();
-            showToast.show("该设备已经命名",0);
-        }else{
-            turnShowDialog(device, position);
-        }
+//        String deviceNameByAdress = spUtils.getDeviceNameByAdress(device.getAddress());
+//        if (!TextUtils.isEmpty(deviceNameByAdress)) {
+//
+//            leDeviceListAdapter.updateView(mDevice, deviceNameByAdress, position);
+//            leDeviceListAdapter.notifyDataSetChanged();
+//            showToast.show("该设备已经命名", 0);
+//        } else {
+//        }
+        turnShowDialog(device, position);
     }
 
     private void turnShowDialog(final BluetoothDevice device, final int index) {
@@ -273,6 +292,5 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
         });
         builder.show();
     }
-
 
 }

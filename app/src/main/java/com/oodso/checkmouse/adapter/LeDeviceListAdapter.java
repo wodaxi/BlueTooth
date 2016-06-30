@@ -99,7 +99,6 @@ public class LeDeviceListAdapter extends BaseAdapter {
             holder.deviceName = (TextView) view.findViewById(R.id.device_name);
             holder.deviceName.setText(string);
 
-
         }
     }
 }
