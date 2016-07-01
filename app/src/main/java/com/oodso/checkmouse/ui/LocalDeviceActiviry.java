@@ -120,6 +120,7 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
+                        String address = userdata.getUserPwd();
 
                         break;
                     case 1:

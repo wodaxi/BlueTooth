@@ -30,14 +30,6 @@ public class LeDeviceListAdapter extends BaseAdapter {
         }
     }
 
-    /**
-     * 设备改名
-     *
-     * @return
-     */
-    public void ChangeDeviceName(String name,int x) {
-        viewHolder.deviceName.setText(name);
-    }
 
     public BluetoothDevice getDevice(int position) {
         return mLeDevices.get(position);
@@ -78,9 +70,9 @@ public class LeDeviceListAdapter extends BaseAdapter {
         BluetoothDevice device = mLeDevices.get(i);
 
         final String deviceName = device.getName();
-        if (deviceName != null && deviceName.length() > 0)
+//        if (deviceName != null && deviceName.length() > 0)
 //            viewHolder.deviceName.setText(device.getName());
-            viewHolder.deviceAddress.setText(device.getAddress());
+            viewHolder.deviceAddress.setText(device.getAddress().toString());
             viewHolder.deviceNumber.setText((i+1) + "");
 
         return view;

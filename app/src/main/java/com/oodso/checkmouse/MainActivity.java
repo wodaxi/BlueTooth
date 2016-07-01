@@ -5,6 +5,10 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -65,6 +69,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
                     break;
                 case 2:
                     showProgressDialog(MainActivity.this);
+                    break;
+                case 3:
+                    showToast.show("连接成功",0);
+                    break;
+                case 4:
+                    showToast.show("连接失败",0);
                     break;
 
             }
@@ -146,7 +156,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
                 if (!blAdapter.isEnabled()) {
                     this.intent = new Intent(
                             BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivity(this.intent);
+                    startActivityForResult(this.intent,1);
                 } else {
 
                     turnToSearch();
@@ -171,12 +181,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 
             }
         }, 0);
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                blAdapter.stopLeScan(mLeScanCallback);
-            }
-        }, 5000);
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                blAdapter.stopLeScan(mLeScanCallback);
+//            }
+//        }, 5000);
     }
 
 
@@ -243,24 +253,74 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
         BluetoothDevice device = leDeviceListAdapter.getDevice(position);
         if (device == null)
             return;
-
-
-//        String deviceNameByAdress = spUtils.getDeviceNameByAdress(device.getAddress());
-//        if (!TextUtils.isEmpty(deviceNameByAdress)) {
-//
-//            leDeviceListAdapter.updateView(mDevice, deviceNameByAdress, position);
-//            leDeviceListAdapter.notifyDataSetChanged();
-//            showToast.show("该设备已经命名", 0);
-//        } else {
-//        }
         turnShowDialog(device, position);
     }
+
+    private  BluetoothGattCallback btgCallback = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            super.onConnectionStateChange(gatt, status, newState);
+
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                gatt.discoverServices(); //执行到这里其实蓝牙已经连接成功了
+                Message message = handler.obtainMessage();
+                message.what = 3;
+                handler.sendMessage(message);
+
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                Message message = handler.obtainMessage();
+                message.what = 4;
+                handler.sendMessage(message);
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            super.onServicesDiscovered(gatt, status);
+
+
+        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicWrite(gatt, characteristic, status);
+        }
+    };
 
     private void turnShowDialog(final BluetoothDevice device, final int index) {
         final EditText et = new EditText(MainActivity.this);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("设备重命名");
         builder.setView(et);
+        builder.setItems(new String[] { "连接", "命名", "查看电量", "甲醛浓度", "历史数据" }, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        device.connectGatt(MainActivity.this,false,btgCallback);
+                        break;
+                    case 1:
+                        break;
+
+                    case 2:
+
+                        break;
+                    case 3:
+
+                        break;
+                    case 4:
+                        break;
+
+                }
+
+            }
+        });
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
 
             @Override
@@ -293,4 +353,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
         builder.show();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1){
+            turnToSearch();
+        }
+
+    }
 }
