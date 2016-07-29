@@ -40,10 +40,10 @@ public class LocalDeviceActiviry extends Activity implements AdapterView.OnItemC
 
         setContentView(R.layout.activity_main);
 
-        if (mUserDataManager == null) {
-            mUserDataManager = new UserDataManager(this);
-            mUserDataManager.openDataBase();
-        }
+//        if (mUserDataManager == null) {
+//            mUserDataManager = new UserDataManager(this);
+//            mUserDataManager.openDataBase();
+//        }
         initUI();
     }
 

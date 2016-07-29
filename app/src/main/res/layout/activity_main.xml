@@ -9,7 +9,8 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/red">
+        android:background="@color/blue">
+
         <Button
             android:id="@+id/bt_search"
             android:layout_width="wrap_content"
@@ -21,8 +22,11 @@
             android:padding="5dp"
             android:text="搜索"
             android:textColor="@color/white"
-            android:textSize="10sp" />
+            android:textSize="10sp"
+            android:visibility="gone" />
+
         <TextView
+            android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
@@ -39,13 +43,72 @@
             android:layout_marginRight="20dp"
             android:background="@drawable/topbar_item_click"
             android:padding="5dp"
-            android:text="本地设备"
-            android:textColor="@color/white"
+            android:text="搜索"
+            android:textColor="@color/black"
             android:textSize="10sp" />
     </RelativeLayout>
 
     <ListView
+
         android:id="@+id/ll_device_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></ListView>
+        android:layout_height="match_parent"
+        android:divider="@color/white"
+        android:dividerHeight="5dp"
+        android:padding="10dp"
+        android:scrollbars="none" />
+
+    <LinearLayout
+        android:id="@+id/ll_data"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <TextView
+            android:id="@+id/tv_device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="15sp"
+            android:text="Device Address: " />
+        <TextView
+            android:id="@+id/tv_device_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="15sp"
+            android:text="Device State: 未连接" />
+        <TextView
+            android:id="@+id/tv_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="15sp"
+            android:text="实时数据:暂无数据" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/bt_dicon"
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/topbar_item_click"
+                android:text="断开" />
+
+            <Button  android:id="@+id/bt_connect"
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/connect"
+                android:text="连接" />
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>

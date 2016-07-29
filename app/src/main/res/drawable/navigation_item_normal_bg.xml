@@ -3,12 +3,12 @@
 
     <gradient
         android:angle="90"
-        android:endColor="#696969"
-        android:startColor="#696969" />
+        android:endColor="#ffffff"
+        android:startColor="#ffffff" />
 
     <stroke
         android:width="0.5dp"
-        android:color="#696969" />
+        android:color="#ffffff" />
 
     <corners android:radius="5dp" />
 

@@ -5,10 +5,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -20,17 +16,21 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.oodso.checkmouse.adapter.LeDeviceListAdapter;
-import com.oodso.checkmouse.dao.UserData;
 import com.oodso.checkmouse.dao.UserDataManager;
-import com.oodso.checkmouse.ui.LocalDeviceActiviry;
+import com.oodso.checkmouse.ui.DataActivity;
 import com.oodso.checkmouse.utils.SPUtils;
 import com.oodso.checkmouse.utils.ShowToast;
 
-public class MainActivity extends Activity implements View.OnClickListener, AdapterView.OnItemClickListener {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends Activity implements View.OnClickListener, AdapterView.OnItemClickListener, LeDeviceListAdapter.ClickIterface {
 
     private ListView mDevice;
+    private List<BluetoothDevice> devices;
     private BluetoothAdapter blAdapter;
     private ProgressDialog dialog;
     private LeDeviceListAdapter leDeviceListAdapter;
@@ -62,7 +62,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
                                     }
                                 }
                             } else {
-                                showToast.show("暂无设备", 0);
+//                                showToast.show("暂无设备", 0);
+                                    Toast.makeText(MainActivity.this,"未发现设备",Toast.LENGTH_SHORT).show();
                             }
                         }
                     }, 1000);
@@ -70,12 +71,15 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
                 case 2:
                     showProgressDialog(MainActivity.this);
                     break;
-                case 3:
-                    showToast.show("连接成功",0);
-                    break;
-                case 4:
-                    showToast.show("连接失败",0);
-                    break;
+//                case 3:
+//                    showToast.show("连接成功",0);
+//                    BluetoothDevice device = (BluetoothDevice) msg.obj;
+//
+//
+//                    break;
+//                case 4:
+//                    showToast.show("连接失败",0);
+//                    break;
 
             }
         }
@@ -91,14 +95,19 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 			 * scanRecode: 远程设备提供的配对号(公告)
 			 */
             //判断是否是检测鼠设备
-            if (toHexString1(scanRecord).contains("18f0")) {
-            }
+            if (toHexString1(scanRecord).contains("18f0")) {}
+//                leDeviceListAdapter.addDevice(device);
+            if (!devices.contains(device)){
 
-                System.out.println("搜索到的设备 -- " + device);
-                leDeviceListAdapter.addDevice(device);
+                devices.add(device);
+            }
                 Message message = handler.obtainMessage();
                 message.what = 1;
                 handler.sendMessage(message);
+
+
+//            System.out.println("搜索到的设备 -- " + device);
+
 
         }
     };
@@ -118,7 +127,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 
         spUtils = new SPUtils(MainActivity.this);
         showToast = new ShowToast(MainActivity.this);
-
+        devices = new ArrayList<>();
 
         initView();
     }
@@ -128,7 +137,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
         findViewById(R.id.bt_search).setOnClickListener(this);
         findViewById(R.id.bt_local).setOnClickListener(this);
         mDevice = (ListView) findViewById(R.id.ll_device_list);
-        leDeviceListAdapter = new LeDeviceListAdapter(MainActivity.this);
+        leDeviceListAdapter = new LeDeviceListAdapter(MainActivity.this,devices);
+        leDeviceListAdapter.SetClickIterface(this);
 
 
         mDevice.setAdapter(leDeviceListAdapter);
@@ -145,18 +155,18 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.bt_local:
-                //跳转页面
-                intent = new Intent(MainActivity.this, LocalDeviceActiviry.class);
-                startActivity(intent);
-                break;
             case R.id.bt_search:
+                //跳转页面
+//                intent = new Intent(MainActivity.this, LocalDeviceActiviry.class);
+//                startActivity(intent);
+                break;
+            case R.id.bt_local:
                 //检测蓝牙是否开启
                 blAdapter = BluetoothAdapter.getDefaultAdapter();
                 if (!blAdapter.isEnabled()) {
                     this.intent = new Intent(
                             BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(this.intent,1);
+                    startActivityForResult(this.intent, 1);
                 } else {
 
                     turnToSearch();
@@ -181,12 +191,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 
             }
         }, 0);
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                blAdapter.stopLeScan(mLeScanCallback);
-//            }
-//        }, 5000);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                blAdapter.stopLeScan(mLeScanCallback);
+            }
+        }, 5000);
     }
 
 
@@ -245,6 +255,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
                 }
             }
         }).start();
+
+
     }
 
 
@@ -253,74 +265,76 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
         BluetoothDevice device = leDeviceListAdapter.getDevice(position);
         if (device == null)
             return;
-        turnShowDialog(device, position);
+//        turnShowDialog(device, position);
     }
 
-    private  BluetoothGattCallback btgCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            super.onConnectionStateChange(gatt, status, newState);
-
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                gatt.discoverServices(); //执行到这里其实蓝牙已经连接成功了
-                Message message = handler.obtainMessage();
-                message.what = 3;
-                handler.sendMessage(message);
-
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Message message = handler.obtainMessage();
-                message.what = 4;
-                handler.sendMessage(message);
-            }
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            super.onServicesDiscovered(gatt, status);
-
-
-        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicRead(gatt, characteristic, status);
-        }
-
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicWrite(gatt, characteristic, status);
-        }
-    };
+//    private  BluetoothGattCallback btgCallback = new BluetoothGattCallback() {
+//        @Override
+//        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+//            super.onConnectionStateChange(gatt, status, newState);
+//
+//            if (newState == BluetoothProfile.STATE_CONNECTED) {
+//                gatt.discoverServices(); //执行到这里其实蓝牙已经连接成功了
+//                Message message = handler.obtainMessage();
+//                message.what = 3;
+//                message.obj = mDevice;
+//                handler.sendMessage(message);
+//
+//            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+//                Message message = handler.obtainMessage();
+//                message.what = 4;
+//
+//                handler.sendMessage(message);
+//            }
+//        }
+//
+//        @Override
+//        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+//            super.onServicesDiscovered(gatt, status);
+//
+//
+//        }
+//
+//        @Override
+//        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+//            super.onCharacteristicRead(gatt, characteristic, status);
+//        }
+//
+//        @Override
+//        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+//            super.onCharacteristicWrite(gatt, characteristic, status);
+//        }
+//    };
 
     private void turnShowDialog(final BluetoothDevice device, final int index) {
         final EditText et = new EditText(MainActivity.this);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("设备重命名");
         builder.setView(et);
-        builder.setItems(new String[] { "连接", "命名", "查看电量", "甲醛浓度", "历史数据" }, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        device.connectGatt(MainActivity.this,false,btgCallback);
-                        break;
-                    case 1:
-                        break;
-
-                    case 2:
-
-                        break;
-                    case 3:
-
-                        break;
-                    case 4:
-                        break;
-
-                }
-
-            }
-        });
+//        builder.setItems(new String[] { "连接", "命名", "查看电量", "甲醛浓度", "历史数据" }, new DialogInterface.OnClickListener() {
+//
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                switch (which) {
+//                    case 0:
+//                        device.connectGatt(MainActivity.this,false,btgCallback);
+//                        break;
+//                    case 1:
+//                        break;
+//
+//                    case 2:
+//
+//                        break;
+//                    case 3:
+//
+//                        break;
+//                    case 4:
+//                        break;
+//
+//                }
+//
+//            }
+//        });
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
 
             @Override
@@ -331,10 +345,10 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
 
                 if (!TextUtils.isEmpty(device_name)) {
                     leDeviceListAdapter.updateView(mDevice, device_name, index);
-                    UserData userData = new UserData(device_name, address);
-                    mUserDataManager = new UserDataManager(MainActivity.this);
-                    mUserDataManager.openDataBase();
-                    mUserDataManager.insertUserData(userData);
+//                    UserData userData = new UserData(device_name, address);
+//                    mUserDataManager = new UserDataManager(MainActivity.this);
+//                    mUserDataManager.openDataBase();
+//                    mUserDataManager.insertUserData(userData);
 
 
                     spUtils.saveAddress(address, device_name);
@@ -356,9 +370,23 @@ public class MainActivity extends Activity implements View.OnClickListener, Adap
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1){
+        if (requestCode == 1) {
             turnToSearch();
         }
 
+    }
+
+
+    @Override
+    public void changeName(BluetoothDevice device, int index) {
+        turnShowDialog(device, index);
+    }
+
+    @Override
+    public void gotoData(BluetoothDevice device, int index) {
+        Intent intent = new Intent(MainActivity.this, DataActivity.class);
+        intent.putExtra("device", device);
+        intent.putExtra("index", index);
+        startActivity(intent);
     }
 }

@@ -31,4 +31,6 @@ dependencies {
     //注解
     compile 'com.jakewharton:butterknife:8.0.1'
     apt 'com.jakewharton:butterknife-compiler:8.0.1'
+    //事件通知
+    compile 'org.simple:androideventbus:1.0.5.1'
 }

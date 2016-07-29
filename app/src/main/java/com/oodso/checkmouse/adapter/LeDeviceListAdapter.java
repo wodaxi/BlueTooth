@@ -11,16 +11,17 @@ import android.widget.TextView;
 
 import com.oodso.checkmouse.R;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class LeDeviceListAdapter extends BaseAdapter {
-    private ArrayList<BluetoothDevice> mLeDevices;
+    private List<BluetoothDevice> mLeDevices;
     private LayoutInflater mInflator;
     private ViewHolder viewHolder;
+    public ClickIterface clickinterface;
 
-    public LeDeviceListAdapter(Activity mActivity) {
+    public LeDeviceListAdapter(Activity mActivity,List<BluetoothDevice> mLeDevices) {
         super();
-        mLeDevices = new ArrayList<BluetoothDevice>();
+       this.mLeDevices = mLeDevices;
         mInflator = mActivity.getLayoutInflater();
     }
 
@@ -28,6 +29,16 @@ public class LeDeviceListAdapter extends BaseAdapter {
         if (!mLeDevices.contains(device)) {
             mLeDevices.add(device);
         }
+    }
+    public void SetClickIterface(ClickIterface c){
+        this.clickinterface = c;
+    }
+
+    public interface ClickIterface {
+        public void changeName( BluetoothDevice device,  int index);
+
+        public void gotoData(BluetoothDevice device,  int index);
+
     }
 
 
@@ -55,37 +66,53 @@ public class LeDeviceListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(final int i, View view, ViewGroup viewGroup) {
         viewHolder = new ViewHolder();
         if (view == null) {
             view = mInflator.inflate(R.layout.device_item, null);
             viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
             viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
             viewHolder.deviceNumber = (TextView) view.findViewById(R.id.device_number);
+            viewHolder.tv_changename = (TextView) view.findViewById(R.id.tv_changename);
+            viewHolder.tv_goto_data = (TextView) view.findViewById(R.id.tv_goto_data);
+
             view.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) view.getTag();
         }
 
-        BluetoothDevice device = mLeDevices.get(i);
+        final BluetoothDevice device = mLeDevices.get(i);
 
         final String deviceName = device.getName();
 //        if (deviceName != null && deviceName.length() > 0)
 //            viewHolder.deviceName.setText(device.getName());
-            viewHolder.deviceAddress.setText(device.getAddress().toString());
-            viewHolder.deviceNumber.setText((i+1) + "");
+        viewHolder.deviceAddress.setText(device.getAddress().toString());
+        viewHolder.deviceNumber.setText((i + 1) + "");
+
+        viewHolder.tv_changename.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickinterface.changeName(device,i);
+            }
+        });
+        viewHolder.tv_goto_data.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickinterface.gotoData(device,i);
+            }
+        });
 
         return view;
     }
 
     static class ViewHolder {
-      public  TextView deviceName, deviceAddress, deviceNumber;
+        public TextView deviceName, deviceAddress, deviceNumber, tv_changename, tv_goto_data;
 
     }
 
     public void updateView(ListView mDevice, String string, int x) {
         int firstVisiblePosition = mDevice.getFirstVisiblePosition();
-        if(x - firstVisiblePosition >=0){
+        if (x - firstVisiblePosition >= 0) {
             View view = mDevice.getChildAt(x - firstVisiblePosition);
             ViewHolder holder = (ViewHolder) view.getTag();
             holder.deviceName = (TextView) view.findViewById(R.id.device_name);
